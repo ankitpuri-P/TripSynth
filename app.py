@@ -130,7 +130,7 @@ if st.session_state.user_name == "":
     st.markdown("<br><br><br><br>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center; font-size: 4rem; color:#00ffff; text-shadow: 0 0 15px #00ffff;'>TripSynth ⚡</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: gray; font-size: 1.2rem;'>Synthesize your perfect journey.</p>", unsafe_allow_html=True)
-    
+
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         name_input = st.text_input("What should I call you?", placeholder="Enter your first name...")
@@ -149,7 +149,7 @@ if "active_chat" not in st.session_state:
 with st.sidebar:
     st.title("⚡ TripSynth")
     st.caption("Your AI Travel Engine")
-    
+
     if st.button("➕ New Expedition", use_container_width=True):
         new_chat_name = f"New Expedition {len(st.session_state.chats) + 1}"
         st.session_state.chats[new_chat_name] = []
@@ -158,7 +158,7 @@ with st.sidebar:
 
     st.divider()
     st.write("### History")
-    
+
     for chat_name in st.session_state.chats.keys():
         if st.button(chat_name, use_container_width=True):
             st.session_state.active_chat = chat_name
@@ -189,57 +189,57 @@ for msg in st.session_state.chats[st.session_state.active_chat]:
             content = msg["content"]
             content = re.sub(r'<.*?>', '', content)
             content = re.sub(r'\n+', '\n', content).strip()
-            
+
             # Split by Day
             if not re.search(r'Day\s*\d+', content):
                 # Normal response (no itinerary)
                 st.write(content)
             else:
                 days = re.split(r'Day\s*\d+:', content)
-                
+
                 # Intro text
                 intro_text = days[0].strip()
                 if intro_text:
                     st.write(intro_text)
-                
+
                 cards_html = ""
-                
+
                 for i in range(1, len(days)):
                     day_content = days[i].strip()
-                    
+
                     if day_content == "":
                         continue
-                    
+
                     # Split the day's content into separate lines
                     day_lines = day_content.split('\n')
                     formatted_lines = []
-                    
+
                     for line in day_lines:
                         line = line.strip()
                         if not line:
                             continue
-                            
+
                         if ":" in line and "|" in line:
                             try:
                                 time_part, rest = line.split(":", 1)
                                 loc_part, desc_part = rest.split("|", 1)
-                                
+
                                 loc_clean = loc_part.strip()
                                 desc_clean = desc_part.strip()
-                                
+
                                 # Generate the Universal Google Maps Link 
                                 map_query = loc_clean.replace(' ', '+')
                                 map_url = f"https://www.google.com/maps/search/?api=1&query={map_query}"
-                                
+
                                 # glowing green button CSS
                                 map_link = f"<a href='{map_url}' target='_blank' style='color:#00ff99; text-decoration:none; font-size:0.85em; border: 1px solid #00ff99; padding: 2px 8px; border-radius: 4px; margin-left: 10px; transition: 0.3s;'>📍 Map</a>"
-                                
+
                                 # Assign the right icon
                                 if "Morning" in time_part: icon = "🌅"
                                 elif "Afternoon" in time_part: icon = "🌇"
                                 elif "Evening" in time_part: icon = "🌙"
                                 else: icon = "📌"
-                                
+
                                 formatted_lines.append(f"<b>{icon} {time_part.strip()}:</b> <span style='color:#ffcc00; font-weight:bold;'>{loc_clean}</span> {map_link}<br>{desc_clean}")
                             except Exception:
                                 formatted_lines.append(line)
@@ -267,11 +267,11 @@ user_query = st.chat_input("Where do you want to go next? ✈️")
 
 if user_query:
     st.session_state.chats[st.session_state.active_chat].append({"role": "user", "content": user_query})
-    
+
     with st.chat_message("user"):
         st.write(user_query)
 
-        with st.spinner("Synthesizing your itinerary..."):
+    with st.spinner("Synthesizing your itinerary..."):
 
         llm = ChatGroq(
             api_key=st.secrets["GROQ_API_KEY"],
@@ -280,15 +280,14 @@ if user_query:
         )
 
         # --- AUTO-NAMING ---
-
         if len(st.session_state.chats[st.session_state.active_chat]) == 1 and st.session_state.active_chat.startswith("New Expedition"):
             try:
                 title_prompt = f"Generate a short 2 to 4 word title for a travel plan based on this request: '{user_query}'. Return ONLY the title, no quotes, no extra text."
                 new_title = llm.invoke(title_prompt).content.strip(' "')
-                
+
                 if new_title in st.session_state.chats:
                     new_title = f"{new_title} ({len(st.session_state.chats) + 1})"
-                
+
                 old_name = st.session_state.active_chat
                 st.session_state.chats[new_title] = st.session_state.chats.pop(old_name)
                 st.session_state.active_chat = new_title
@@ -329,7 +328,7 @@ if user_query:
 
             STEP 2: FINAL ANSWER
             Write your natural, conversational response based on the guidelines above. Do NOT include any image tags or search commands in your final output."""),
-            
+
             MessagesPlaceholder(variable_name="chat_history"), 
             ("human", "{input}"),
             ("placeholder", "{agent_scratchpad}"), 
@@ -357,5 +356,5 @@ if user_query:
             "role": "assistant", 
             "content": output_text
         })
-        
+
         st.rerun()
