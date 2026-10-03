@@ -68,38 +68,47 @@ section[data-testid="stSidebar"] {
 [data-testid="stChatMessageContent"] {
     width: 100% !important;
     max-width: 100% !important;
+    padding: 0 !important;
 }
 
+/* 📦 PERFECTLY CENTERED GRID */
 .itinerary-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    margin: 10px auto;
-    width: 96%;
+    gap: 15px;
+    width: 100%;
+    margin: 10px 0; 
+    box-sizing: border-box;
 }
 
+/* 🔥 ENHANCED GLASSMORPHISM CARDS */
 .itinerary-card {
-    background: rgba(0, 255, 255, 0.05);
-    border: 1px solid rgba(0, 255, 255, 0.3);
-    border-radius: 10px;
+    background: linear-gradient(145deg, rgba(0, 40, 60, 0.6) 0%, rgba(0, 10, 20, 0.8) 100%);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(0, 255, 255, 0.05);
     line-height: 1.6;
+    width: 100%;
+    box-sizing: border-box;
+    backdrop-filter: blur(10px);
 }
 
 .itinerary-title {
     color: #00ffff;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     border-bottom: 1px solid rgba(0, 255, 255, 0.3);
-    padding-bottom: 5px;
+    padding-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
+/* Make it responsive (mobile) */
 @media (max-width: 768px) {
     .itinerary-grid {
         grid-template-columns: 1fr;
-        width: 100%;
     }
 }
 </style>
@@ -222,22 +231,29 @@ for msg in current_chat:
                                 map_query = loc_clean.replace(" ", "+")
                                 map_url = f"https://www.google.com/maps/search/?api=1&query={map_query}"
 
-                                # FIXED MAP BUTTON: nowrap prevents splitting, inline-block fixes padding, added glow/tint
-                                map_link = f"<a href='{map_url}' target='_blank' style='display:inline-block; color:#00ff99; background:rgba(0,255,153,0.1); text-decoration:none; font-size:0.8em; border:1px solid #00ff99; padding:2px 8px; border-radius:6px; margin-left:10px; white-space:nowrap; box-shadow:0 0 5px rgba(0,255,153,0.2);'>📍 Map</a>"
+                                # Perfect Map Button Alignment
+                                map_link = f"<a href='{map_url}' target='_blank' style='display:inline-block; vertical-align:middle; color:#00ff99; background:rgba(0,255,153,0.1); text-decoration:none; font-size:0.8em; border:1px solid #00ff99; padding:2px 8px; border-radius:6px; margin-left:8px; white-space:nowrap; box-shadow:0 0 5px rgba(0,255,153,0.2);'>📍 Map</a>"
 
                                 if "Morning" in time_part: icon = "🌅"
                                 elif "Afternoon" in time_part: icon = "🌇"
                                 elif "Evening" in time_part: icon = "🌙"
                                 else: icon = "📌"
 
-                                # Single line to prevent markdown code block formatting
-                                formatted_lines.append(f"<b>{icon} {time_part.strip()}:</b> <span style='color:#ffcc00; font-weight:bold;'>{loc_clean}</span> {map_link}<br>{desc_clean}")
+                                # Clean structured div for each activity instead of <br> tags
+                                formatted_lines.append(
+                                    f"<div style='margin-bottom: 12px;'>"
+                                    f"<b>{icon} {time_part.strip()}:</b> "
+                                    f"<span style='color:#ffcc00; font-weight:bold;'>{loc_clean}</span>"
+                                    f"{map_link}<br>"
+                                    f"<span style='color:#e0e0e0; font-size:0.95em;'>{desc_clean}</span>"
+                                    f"</div>"
+                                )
                             except Exception:
-                                formatted_lines.append(line)
+                                formatted_lines.append(f"<div style='margin-bottom: 8px;'>{line}</div>")
                         else:
-                            formatted_lines.append(line)
+                            formatted_lines.append(f"<div style='margin-bottom: 8px;'>{line}</div>")
 
-                    day_html = "<br><br>".join(formatted_lines)
+                    day_html = "".join(formatted_lines)
 
                     # Flush left to prevent markdown code block formatting
                     cards_html += f"""
