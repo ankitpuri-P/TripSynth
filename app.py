@@ -275,7 +275,7 @@ if user_query:
 
         llm = ChatGroq(
             api_key=st.secrets["GROQ_API_KEY"],
-            model_name="llama-3.1-8b-instant",
+            model="llama3-8b-8192",
             temperature=0
         )
 
