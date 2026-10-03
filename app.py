@@ -2,6 +2,7 @@ import streamlit as st
 import re
 from langchain_groq import ChatGroq
 from langchain_community.tools import DuckDuckGoSearchRun 
+from langchain_core.tools import tool
 from langchain_classic.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
@@ -263,6 +264,17 @@ for msg in st.session_state.chats[st.session_state.active_chat]:
 
 
 # --- 6. THE CHATBOT LOGIC ---
+
+# Fix: Create a perfectly formatted tool schema that Groq won't reject
+@tool
+def web_search(query: str) -> str:
+    """Search the internet for up-to-date travel information, locations, and weather.
+    Args:
+        query: The specific search query string to look up on the web.
+    """
+    search = DuckDuckGoSearchRun()
+    return search.run(query)
+
 user_query = st.chat_input("Where do you want to go next? ✈️")
 
 if user_query:
@@ -275,7 +287,7 @@ if user_query:
 
         llm = ChatGroq(
             api_key=st.secrets["GROQ_API_KEY"],
-            model="mixtral-8x7b-32768",
+            model="llama3-8b-8192",
             temperature=0
         )
 
@@ -283,7 +295,8 @@ if user_query:
         if len(st.session_state.chats[st.session_state.active_chat]) == 1 and st.session_state.active_chat.startswith("New Expedition"):
             try:
                 title_prompt = f"Generate a short 2 to 4 word title for a travel plan based on this request: '{user_query}'. Return ONLY the title, no quotes, no extra text."
-                new_title = llm.invoke(title_prompt).content.strip(' "')
+                # Fix: Wrap in HumanMessage to prevent raw string Bad Requests
+                new_title = llm.invoke([HumanMessage(content=title_prompt)]).content.strip(' "')
 
                 if new_title in st.session_state.chats:
                     new_title = f"{new_title} ({len(st.session_state.chats) + 1})"
@@ -294,8 +307,8 @@ if user_query:
             except Exception as e:
                 pass 
 
-        search_tool = DuckDuckGoSearchRun()
-        tools = [search_tool]
+        # Fix: Use our custom schema-wrapped tool
+        tools = [web_search]
 
         prompt = ChatPromptTemplate.from_messages([
             ("system", """You are TripSynth, a smart, modern AI travel concierge.
@@ -303,7 +316,7 @@ if user_query:
             Your ONLY job is to give HIGH-QUALITY, PRACTICAL, and NON-REPETITIVE travel advice.
 
             🚨 CRITICAL GUARDRAIL (STAY ON TOPIC):
-            If the user asks about ANYTHING completely unrelated to travel, geography, or culture (e.g., coding, math, physics, general trivia like "what is merge sort"):
+            If the user asks about ANYTHING completely unrelated to travel, geography, or culture:
             - Politely decline to answer.
             - Remind them you are a specialized travel assistant.
             - Ask where they want to travel next.
@@ -331,7 +344,8 @@ if user_query:
 
             MessagesPlaceholder(variable_name="chat_history"), 
             ("human", "{input}"),
-            ("placeholder", "{agent_scratchpad}"), 
+            # Fix: Use robust placeholder formatting for LangChain agents
+            MessagesPlaceholder(variable_name="agent_scratchpad"), 
         ])
 
         agent = create_tool_calling_agent(llm, tools, prompt)
