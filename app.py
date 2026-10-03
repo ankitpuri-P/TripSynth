@@ -222,8 +222,8 @@ for msg in current_chat:
                                 map_query = loc_clean.replace(" ", "+")
                                 map_url = f"https://www.google.com/maps/search/?api=1&query={map_query}"
 
-                                # Single line to prevent markdown code block formatting
-                                map_link = f"<a href='{map_url}' target='_blank' style='color:#00ff99; text-decoration:none; font-size:0.85em; border:1px solid #00ff99; padding:2px 8px; border-radius:4px; margin-left:10px;'>📍 Map</a>"
+                                # FIXED MAP BUTTON: nowrap prevents splitting, inline-block fixes padding, added glow/tint
+                                map_link = f"<a href='{map_url}' target='_blank' style='display:inline-block; color:#00ff99; background:rgba(0,255,153,0.1); text-decoration:none; font-size:0.8em; border:1px solid #00ff99; padding:2px 8px; border-radius:6px; margin-left:10px; white-space:nowrap; box-shadow:0 0 5px rgba(0,255,153,0.2);'>📍 Map</a>"
 
                                 if "Morning" in time_part: icon = "🌅"
                                 elif "Afternoon" in time_part: icon = "🌇"
