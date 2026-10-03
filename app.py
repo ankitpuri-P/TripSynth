@@ -271,16 +271,16 @@ if user_query:
     with st.chat_message("user"):
         st.write(user_query)
 
-    with st.spinner("Synthesizing your itinerary..."):
-        
-                llm = ChatGroq(
+        with st.spinner("Synthesizing your itinerary..."):
+
+        llm = ChatGroq(
             api_key=st.secrets["GROQ_API_KEY"],
-            model_name="llama-3.1-8b-instant", # The 8b-instant model is heavily optimized for fast, free-tier agents
+            model_name="llama-3.1-8b-instant",
             temperature=0
-  
         )
 
         # --- AUTO-NAMING ---
+
         if len(st.session_state.chats[st.session_state.active_chat]) == 1 and st.session_state.active_chat.startswith("New Expedition"):
             try:
                 title_prompt = f"Generate a short 2 to 4 word title for a travel plan based on this request: '{user_query}'. Return ONLY the title, no quotes, no extra text."
