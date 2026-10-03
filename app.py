@@ -16,7 +16,6 @@ from langchain_core.messages import HumanMessage, AIMessage
 st.markdown("""
 <style>
 
-/* TRON Glow Animation */
 @keyframes tronGlow {
     0% {
         color: #00ffff;
@@ -39,31 +38,23 @@ st.markdown("""
     }
 }
 
-
-/* Main heading */
 .glow-text {
     font-size: 3.5rem;
     font-weight: 700;
     animation: tronGlow 6s infinite alternate;
 }
 
-
-/* Sub heading */
 .glow-sub {
     font-size: 3.5rem;
     animation: tronGlow 8s infinite alternate;
 }
 
-
-/* Global background */
 html,
 body,
 [class*="css"] {
     background-color: #000000;
 }
 
-
-/* Main app */
 .stApp {
     background: radial-gradient(
         circle at top,
@@ -72,28 +63,20 @@ body,
     );
 }
 
-
-/* Header */
 header {
     background: transparent !important;
 }
 
-
-/* Footer */
 footer {
     background: transparent !important;
 }
 
-
-/* Main container */
 .block-container {
     background: transparent !important;
     padding-top: 2rem;
     max-width: 1200px !important;
 }
 
-
-/* Sidebar */
 section[data-testid="stSidebar"] {
     background: linear-gradient(
         180deg,
@@ -102,8 +85,6 @@ section[data-testid="stSidebar"] {
     );
 }
 
-
-/* Chat bubbles */
 .stChatMessage {
     background: rgba(17, 17, 17, 0.8);
     border: 1px solid #00ffff33;
@@ -112,25 +93,16 @@ section[data-testid="stSidebar"] {
     width: 100% !important;
 }
 
-
-/* Remove hidden Streamlit bars */
 [data-testid="stHeader"],
 [data-testid="stToolbar"],
 [data-testid="stBottom"] {
     background: transparent !important;
 }
 
-
-/* Chat message content */
 [data-testid="stChatMessageContent"] {
     width: 100% !important;
     max-width: 100% !important;
 }
-
-
-/* ============================================================
-   ITINERARY GRID
-   ============================================================ */
 
 .itinerary-grid {
     display: grid;
@@ -140,8 +112,6 @@ section[data-testid="stSidebar"] {
     width: 96%;
 }
 
-
-/* Itinerary card */
 .itinerary-card {
     background: rgba(0, 255, 255, 0.05);
     border: 1px solid rgba(0, 255, 255, 0.3);
@@ -151,8 +121,6 @@ section[data-testid="stSidebar"] {
     line-height: 1.6;
 }
 
-
-/* Itinerary title */
 .itinerary-title {
     color: #00ffff;
     font-size: 1.2rem;
@@ -162,15 +130,11 @@ section[data-testid="stSidebar"] {
     padding-bottom: 5px;
 }
 
-
-/* Mobile */
 @media (max-width: 768px) {
-
     .itinerary-grid {
         grid-template-columns: 1fr;
         width: 100%;
     }
-
 }
 
 </style>
@@ -178,7 +142,7 @@ section[data-testid="stSidebar"] {
 
 
 # ============================================================
-# 2. WELCOME SCREEN / NAME GATEKEEPER
+# 2. WELCOME SCREEN
 # ============================================================
 
 if "user_name" not in st.session_state:
@@ -244,7 +208,7 @@ if st.session_state.user_name == "":
 
 
 # ============================================================
-# 3. MULTI-CHAT MEMORY SETUP
+# 3. CHAT MEMORY
 # ============================================================
 
 if "chats" not in st.session_state:
@@ -269,8 +233,6 @@ with st.sidebar:
 
     st.caption("Your AI Travel Engine")
 
-
-    # New expedition button
     if st.button(
         "➕ New Expedition",
         use_container_width=True
@@ -287,13 +249,10 @@ with st.sidebar:
 
         st.rerun()
 
-
     st.divider()
 
     st.write("### History")
 
-
-    # Existing conversations
     for chat_name in st.session_state.chats.keys():
 
         if st.button(
@@ -310,16 +269,13 @@ with st.sidebar:
 # 5. MAIN CHAT UI
 # ============================================================
 
-is_empty_chat = (
-    len(
-        st.session_state.chats[
-            st.session_state.active_chat
-        ]
-    ) == 0
-)
+current_chat = st.session_state.chats[
+    st.session_state.active_chat
+]
+
+is_empty_chat = len(current_chat) == 0
 
 
-# Welcome message
 if is_empty_chat:
 
     st.markdown(
@@ -348,46 +304,31 @@ else:
 # 6. RENDER CHAT HISTORY
 # ============================================================
 
-for msg in st.session_state.chats[
-    st.session_state.active_chat
-]:
+for msg in current_chat:
 
     with st.chat_message(msg["role"]):
-
-
-        # ----------------------------------------------------
-        # USER MESSAGE
-        # ----------------------------------------------------
 
         if msg["role"] == "user":
 
             st.write(msg["content"])
 
-
-        # ----------------------------------------------------
-        # ASSISTANT MESSAGE
-        # ----------------------------------------------------
-
         else:
 
             content = msg["content"]
 
-
-            # Remove HTML
+            # Remove HTML tags
             content = re.sub(
                 r"<.*?>",
                 "",
                 content
             )
 
-
-            # Remove excessive newlines
+            # Remove excessive blank lines
             content = re.sub(
                 r"\n+",
                 "\n",
                 content
             ).strip()
-
 
             # ------------------------------------------------
             # NORMAL RESPONSE
@@ -400,7 +341,6 @@ for msg in st.session_state.chats[
 
                 st.write(content)
 
-
             # ------------------------------------------------
             # ITINERARY RESPONSE
             # ------------------------------------------------
@@ -412,90 +352,53 @@ for msg in st.session_state.chats[
                     content
                 )
 
-
-                # Intro text
                 intro_text = days[0].strip()
 
                 if intro_text:
-
                     st.write(intro_text)
-
 
                 cards_html = ""
 
-
-                # Process every day
-                for i in range(
-                    1,
-                    len(days)
-                ):
+                for i in range(1, len(days)):
 
                     day_content = days[i].strip()
 
-
-                    if day_content == "":
+                    if not day_content:
                         continue
 
-
-                    day_lines = day_content.split(
-                        "\n"
-                    )
+                    day_lines = day_content.split("\n")
 
                     formatted_lines = []
 
-
-                    # Process every activity
                     for line in day_lines:
 
                         line = line.strip()
 
-
                         if not line:
                             continue
-
-
-                        # Expected format:
-                        #
-                        # Morning: Location | Description
-                        #
 
                         if ":" in line and "|" in line:
 
                             try:
 
-                                time_part, rest = (
-                                    line.split(
-                                        ":",
-                                        1
-                                    )
+                                time_part, rest = line.split(
+                                    ":",
+                                    1
                                 )
 
-
-                                loc_part, desc_part = (
-                                    rest.split(
-                                        "|",
-                                        1
-                                    )
+                                loc_part, desc_part = rest.split(
+                                    "|",
+                                    1
                                 )
 
+                                loc_clean = loc_part.strip()
 
-                                loc_clean = (
-                                    loc_part.strip()
+                                desc_clean = desc_part.strip()
+
+                                map_query = loc_clean.replace(
+                                    " ",
+                                    "+"
                                 )
-
-                                desc_clean = (
-                                    desc_part.strip()
-                                )
-
-
-                                # Google Maps query
-                                map_query = (
-                                    loc_clean.replace(
-                                        " ",
-                                        "+"
-                                    )
-                                )
-
 
                                 map_url = (
                                     "https://www.google.com/"
@@ -503,8 +406,6 @@ for msg in st.session_state.chats[
                                     f"&query={map_query}"
                                 )
 
-
-                                # Google Maps button
                                 map_link = f"""
                                 <a
                                     href="{map_url}"
@@ -523,24 +424,17 @@ for msg in st.session_state.chats[
                                 </a>
                                 """
 
-
-                                # Icons
                                 if "Morning" in time_part:
-
                                     icon = "🌅"
 
                                 elif "Afternoon" in time_part:
-
                                     icon = "🌇"
 
                                 elif "Evening" in time_part:
-
                                     icon = "🌙"
 
                                 else:
-
                                     icon = "📌"
-
 
                                 formatted_lines.append(
                                     f"""
@@ -564,13 +458,11 @@ for msg in st.session_state.chats[
                                     """
                                 )
 
-
                             except Exception:
 
                                 formatted_lines.append(
                                     line
                                 )
-
 
                         else:
 
@@ -578,12 +470,9 @@ for msg in st.session_state.chats[
                                 line
                             )
 
-
-                    # Build day card
                     day_html = "<br><br>".join(
                         formatted_lines
                     )
-
 
                     cards_html += f"""
                     <div class="itinerary-card">
@@ -599,8 +488,6 @@ for msg in st.session_state.chats[
                     </div>
                     """
 
-
-                # Render itinerary
                 st.markdown(
                     f"""
                     <div class="itinerary-grid">
@@ -642,9 +529,9 @@ user_query = st.chat_input(
 
 if user_query:
 
-    # ========================================================
-    # SAVE USER MESSAGE
-    # ========================================================
+    # --------------------------------------------------------
+    # Save user message
+    # --------------------------------------------------------
 
     st.session_state.chats[
         st.session_state.active_chat
@@ -655,147 +542,117 @@ if user_query:
         }
     )
 
-
-    # Show user message
     with st.chat_message("user"):
 
         st.write(user_query)
 
 
-    # ========================================================
-    # AI PROCESSING
-    # ========================================================
+    # --------------------------------------------------------
+    # AI processing
+    # --------------------------------------------------------
 
     with st.spinner(
         "Synthesizing your itinerary..."
     ):
 
+        try:
 
-        # ----------------------------------------------------
-        # GROQ LLM
-        # ----------------------------------------------------
+            # =================================================
+            # GROQ MODEL
+            # =================================================
 
-        llm = ChatGroq(
-
-            api_key=st.secrets[
-                "GROQ_API_KEY"
-            ],
-
-            # IMPORTANT:
-            # llama3-8b-8192 is retired.
-            #
-            # This model supports tool calling.
-            model="openai/gpt-oss-20b",
-
-            temperature=0
-        )
-
-
-        # ====================================================
-        # AUTO-NAMING
-        # ====================================================
-
-        if (
-            len(
-                st.session_state.chats[
-                    st.session_state.active_chat
-                ]
-            ) == 1
-
-            and
-
-            st.session_state.active_chat.startswith(
-                "New Expedition"
+            llm = ChatGroq(
+                api_key=st.secrets["GROQ_API_KEY"],
+                model="openai/gpt-oss-20b",
+                temperature=0
             )
-        ):
-
-            try:
-
-                title_prompt = (
-                    "Generate a short 2 to 4 word "
-                    "title for a travel plan based "
-                    f"on this request: '{user_query}'. "
-                    "Return ONLY the title, "
-                    "no quotes, no extra text."
-                )
 
 
-                title_response = llm.invoke(
-                    [
-                        HumanMessage(
-                            content=title_prompt
-                        )
+            # =================================================
+            # AUTO-NAMING
+            # =================================================
+
+            if (
+                len(
+                    st.session_state.chats[
+                        st.session_state.active_chat
                     ]
+                ) == 1
+
+                and
+
+                st.session_state.active_chat.startswith(
+                    "New Expedition"
                 )
+            ):
 
+                try:
 
-                new_title = (
-                    title_response.content
-                    .strip(' "')
-                )
-
-
-                # Fallback
-                if not new_title:
-
-                    new_title = "Travel Plan"
-
-
-                # Avoid duplicate names
-                if (
-                    new_title
-                    in st.session_state.chats
-                ):
-
-                    new_title = (
-                        f"{new_title} "
-                        f"({len(st.session_state.chats) + 1})"
+                    title_prompt = (
+                        "Generate a short 2 to 4 word "
+                        "title for a travel plan based "
+                        f"on this request: '{user_query}'. "
+                        "Return ONLY the title, "
+                        "no quotes, no extra text."
                     )
 
+                    title_response = llm.invoke(
+                        [
+                            HumanMessage(
+                                content=title_prompt
+                            )
+                        ]
+                    )
 
-                old_name = (
-                    st.session_state.active_chat
-                )
+                    new_title = (
+                        title_response.content
+                        .strip(' "')
+                    )
+
+                    if not new_title:
+                        new_title = "Travel Plan"
+
+                    if new_title in st.session_state.chats:
+
+                        new_title = (
+                            f"{new_title} "
+                            f"({len(st.session_state.chats) + 1})"
+                        )
+
+                    old_name = (
+                        st.session_state.active_chat
+                    )
+
+                    st.session_state.chats[
+                        new_title
+                    ] = st.session_state.chats.pop(
+                        old_name
+                    )
+
+                    st.session_state.active_chat = new_title
+
+                except Exception:
+                    pass
 
 
-                st.session_state.chats[
-                    new_title
-                ] = st.session_state.chats.pop(
-                    old_name
-                )
+            # =================================================
+            # TOOLS
+            # =================================================
+
+            tools = [
+                web_search
+            ]
 
 
-                st.session_state.active_chat = (
-                    new_title
-                )
+            # =================================================
+            # PROMPT
+            # =================================================
 
+            prompt = ChatPromptTemplate.from_messages([
 
-            except Exception:
-
-                # If auto-naming fails,
-                # keep the original chat name.
-                pass
-
-
-        # ====================================================
-        # TOOLS
-        # ====================================================
-
-        tools = [
-            web_search
-        ]
-
-
-        # ====================================================
-        # SYSTEM PROMPT
-        # ====================================================
-
-        prompt = ChatPromptTemplate.from_messages([
-
-            (
-                "system",
-
-                """
+                (
+                    "system",
+                    """
 You are TripSynth, a smart, modern AI travel concierge.
 
 Your ONLY job is to give HIGH-QUALITY, PRACTICAL,
@@ -816,8 +673,7 @@ to travel, geography, or culture:
 ITINERARY FORMATTING
 ==================================================
 
-When creating an itinerary, you MUST use exactly
-this format:
+When creating an itinerary, use exactly this format:
 
 Day 1:
 Morning: Location Name | Activity Description
@@ -836,14 +692,14 @@ IMPORTANT:
 - Always provide the exact location name.
 - Always put "|" between location and description.
 - Keep descriptions practical and useful.
-- Avoid repeating the same attraction unnecessarily.
+- Avoid unnecessary repetition.
 
 ==================================================
 WEB SEARCH
 ==================================================
 
-Use the web search tool when current information is
-needed, such as:
+Use the web search tool when current information
+is needed, including:
 
 - Current weather
 - Current opening hours
@@ -875,28 +731,26 @@ Do NOT include:
 
 Focus entirely on helping the user plan their trip.
 """
-            ),
+                ),
 
-            MessagesPlaceholder(
-                variable_name="chat_history"
-            ),
+                MessagesPlaceholder(
+                    variable_name="chat_history"
+                ),
 
-            (
-                "human",
-                "{input}"
-            ),
+                (
+                    "human",
+                    "{input}"
+                ),
 
-            MessagesPlaceholder(
-                variable_name="agent_scratchpad"
-            )
-        ])
+                MessagesPlaceholder(
+                    variable_name="agent_scratchpad"
+                )
+            ])
 
 
-        # ====================================================
-        # CREATE AGENT
-        # ====================================================
-
-        try:
+            # =================================================
+            # CREATE AGENT
+            # =================================================
 
             agent = create_tool_calling_agent(
                 llm,
@@ -918,13 +772,11 @@ Focus entirely on helping the user plan their trip.
 
             langchain_history = []
 
-
             previous_messages = (
                 st.session_state.chats[
                     st.session_state.active_chat
                 ][:-1]
             )
-
 
             for msg in previous_messages:
 
@@ -957,8 +809,22 @@ Focus entirely on helping the user plan their trip.
             )
 
 
-            # Extract final response
-            output_text = response["output"]
+            # =================================================
+            # GET RESPONSE
+            # =================================================
+
+            output_text = response.get(
+                "output",
+                ""
+            )
+
+
+            if not output_text:
+
+                output_text = (
+                    "Sorry, I couldn't generate "
+                    "a travel plan right now."
+                )
 
 
             # =================================================
@@ -992,25 +858,7 @@ Focus entirely on helping the user plan their trip.
 
 
     # ========================================================
-    # REFRESH UI
+    # REFRESH
     # ========================================================
 
     st.rerun()
-
-Important change
-
-The main fix is this:
-
-model="openai/gpt-oss-20b"
-
-instead of:
-
-model="llama3-8b-8192"
-
-Your old model is retired, which is why entering "Goa" was reaching the Groq API and then dying with "BadRequestError".
-
-Also make sure your Streamlit secrets still contain:
-
-GROQ_API_KEY = "your_groq_api_key"
-
-Then commit/push this "app.py" and redeploy your Streamlit app.
