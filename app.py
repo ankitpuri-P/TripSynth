@@ -273,10 +273,11 @@ if user_query:
 
     with st.spinner("Synthesizing your itinerary..."):
         
-        llm = ChatGroq(
+                llm = ChatGroq(
             api_key=st.secrets["GROQ_API_KEY"],
-            model="llama-3.3-70b-versatile",
+            model_name="llama-3.1-8b-instant", # The 8b-instant model is heavily optimized for fast, free-tier agents
             temperature=0
+  
         )
 
         # --- AUTO-NAMING ---
